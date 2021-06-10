@@ -151,7 +151,3 @@ class Backup:
             f.upload()
         for d in node.sub_directory:
             self.loop(d)
-
-
-if __name__ == '__main__':
-    Backup('./BaiduPCS-Go.exe', 'E:\\1', '/1').main()
