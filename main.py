@@ -67,10 +67,10 @@ class File(Unit):
         result = self.get_info()
         if result:
             size, md5 = result
-            if md5 != self.get_local_md5():
-                self.start_upload()
-            else:
+            if md5 == self.get_local_md5():
                 self.logger.debug(f'skip {self.local_path} --> {self.remote_path}')
+            else:
+                self.start_upload()
         else:
             self.start_upload()
 
