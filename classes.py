@@ -99,7 +99,7 @@ class File(Unit):
             md5_result = re.search('md5 \(可能不正确\) {2}(.+)', meta_result[6])
             if md5_result:
                 fix_result = self.fix_md5()
-                if re.search('修复md5失败, 可能是服务器未刷新', fix_result[0]):
+                if re.search('修复md5失败', fix_result[0]):
                     md5 = md5_result.group(1)
                 else:
                     meta_result = self.get_meta()
