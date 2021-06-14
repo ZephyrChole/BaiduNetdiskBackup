@@ -135,12 +135,11 @@ class Directory(Unit):
 
 
 class Backup:
-    logger = get_logger('backup', LogSetting(logging.DEBUG, True, False))
-
-    def __init__(self, script_path, src, dst):
+    def __init__(self, script_path, src, dst, hasConsole, hasFile):
         self.script_path = script_path
         self.src = src
         self.dst = dst
+        self.logger = get_logger('backup', LogSetting(logging.DEBUG, hasConsole, hasFile))
 
     def main(self):
         root = Directory(self.script_path, self.logger, self.dst, self.src, '')
