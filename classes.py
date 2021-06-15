@@ -110,7 +110,7 @@ class File(Unit):
                 return size, md5
         except Exception as e:
             self.logger.error(e)
-            local = locals().keys()
+            local = list(locals().keys())
             for k in local:
                 if re.search('__.+__', k):
                     pass
