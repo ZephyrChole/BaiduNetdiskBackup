@@ -91,22 +91,31 @@ class File(Unit):
         return self.md5
 
     def get_info(self):
-        meta_result = self.get_meta()
-        if len(meta_result) == 2:
-            return False
-        else:
-            size = int(re.search('(\d+),', meta_result[5]).group(1))
-            md5_result = re.search('md5 \(可能不正确\) {2}(.+)', meta_result[6])
-            if md5_result:
-                fix_result = self.fix_md5()
-                if re.search('修复md5失败', fix_result[0]):
-                    md5 = md5_result.group(1)
-                else:
-                    meta_result = self.get_meta()
-                    md5 = re.search('md5 \(截图请打码\) {2}(.+)', meta_result[6]).group(1)
+        try:
+            meta_result = self.get_meta()
+            if len(meta_result) == 2:
+                return False
             else:
-                md5 = re.search('md5 \(截图请打码\) {2}(.+)', meta_result[6]).group(1)
-            return size, md5
+                size = int(re.search('(\d+),', meta_result[5]).group(1))
+                md5_result = re.search('md5 \(可能不正确\) {2}(.+)', meta_result[6])
+                if md5_result:
+                    fix_result = self.fix_md5()
+                    if re.search('修复md5失败', fix_result[0]):
+                        md5 = md5_result.group(1)
+                    else:
+                        meta_result = self.get_meta()
+                        md5 = re.search('md5 \(截图请打码\) {2}(.+)', meta_result[6]).group(1)
+                else:
+                    md5 = re.search('md5 \(截图请打码\) {2}(.+)', meta_result[6]).group(1)
+                return size, md5
+        except Exception as e:
+            self.logger.error(e)
+            for k in locals().keys():
+                if re.search('__.+__', k):
+                    pass
+                else:
+                    self.logger.error(f'{k}: {locals().get(k)}')
+            return False
 
     def fix_md5(self):
         return self.startPopen([self.script_path, 'fixmd5', self.remote_path])
