@@ -43,6 +43,7 @@ class Unit:
         self.local_path = local_path
         self.name = os.path.split(local_path)[1]
         self.relative_path = relative_path
+        self.dst = dst
         self.remote_path = f'{dst}/{relative_path}' if len(relative_path) else dst
 
     @staticmethod
@@ -99,8 +100,7 @@ class File(Unit):
                 size = int(re.search('(\d+),', meta_result[5]).group(1))
                 md5_result = re.search('md5 \(可能不正确\) {2}(.+)', meta_result[6])
                 if md5_result:
-                    fix_result = self.fix_md5()
-                    if re.search('修复md5失败', fix_result[0]):
+                    if re.search('修复md5失败', self.fix_md5()[0]):
                         md5 = md5_result.group(1)
                     else:
                         meta_result = self.get_meta()
@@ -123,19 +123,28 @@ class File(Unit):
 
 
 class Directory(Unit):
-    def __init__(self, script_path, logger, dst, local_path, relative_path):
+    def __init__(self, script_path, logger, dst, local_path, relative_path, ignore_regex):
         super(Directory, self).__init__(script_path, logger, dst, local_path, relative_path)
+        self.ignore_regex = ignore_regex
+
         self.check_path(self.remote_path)
         self.logger.debug(f'new directory {local_path} --> {self.remote_path}')
+
+    def sub_init(self):
         self.sub_file = []
         self.sub_directory = []
         for name in os.listdir(self.local_path):
             full_local_path = f'{self.local_path}/{name}'
             full_relative_path = f'{self.relative_path}/{name}' if len(self.relative_path) else name
             if os.path.isfile(full_local_path):
-                self.sub_file.append(File(script_path, logger, dst, full_local_path, full_relative_path))
+                if self.ignore_regex.search(name):
+                    pass
+                else:
+                    self.sub_file.append(File(self.script_path, self.logger, self.dst, full_local_path, full_relative_path))
             else:
-                self.sub_directory.append(Directory(script_path, logger, dst, full_local_path, full_relative_path))
+                self.sub_directory.append(
+                    Directory(self.script_path, self.logger, self.dst, full_local_path, full_relative_path,
+                              self.ignore_regex))
 
     def check_path(self, path):
         upper = os.path.split(path)[0]
@@ -151,14 +160,15 @@ class Directory(Unit):
 
 
 class Backup:
-    def __init__(self, script_path, src, dst, hasConsole, hasFile):
+    def __init__(self, script_path, src, dst, hasConsole, hasFile, ignore_regex):
         self.script_path = script_path
         self.src = src
         self.dst = dst
         self.logger = get_logger('backup', LogSetting(logging.DEBUG, hasConsole, hasFile))
+        self.ignore_regex = re.compile(ignore_regex)
 
     def main(self):
-        root = Directory(self.script_path, self.logger, self.dst, self.src, '')
+        root = Directory(self.script_path, self.logger, self.dst, self.src, '', self.ignore_regex)
         self.loop(root)
 
     def loop(self, node: Directory):
