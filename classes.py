@@ -137,10 +137,11 @@ class Directory(Unit):
             full_local_path = f'{self.local_path}/{name}'
             full_relative_path = f'{self.relative_path}/{name}' if len(self.relative_path) else name
             if os.path.isfile(full_local_path):
-                if self.ignore_regex.search(name):
+                if self.ignore_regex and self.ignore_regex.search(name):
                     pass
                 else:
-                    self.sub_file.append(File(self.script_path, self.logger, self.dst, full_local_path, full_relative_path))
+                    self.sub_file.append(
+                        File(self.script_path, self.logger, self.dst, full_local_path, full_relative_path))
             else:
                 self.sub_directory.append(
                     Directory(self.script_path, self.logger, self.dst, full_local_path, full_relative_path,
@@ -160,12 +161,12 @@ class Directory(Unit):
 
 
 class Backup:
-    def __init__(self, script_path, src, dst, hasConsole, hasFile, ignore_regex):
+    def __init__(self, script_path, src, dst, hasConsole, hasFile, ignore_regex=None):
         self.script_path = script_path
         self.src = src
         self.dst = dst
         self.logger = get_logger('backup', LogSetting(logging.DEBUG, hasConsole, hasFile))
-        self.ignore_regex = re.compile(ignore_regex)
+        self.ignore_regex = re.compile(ignore_regex) if ignore_regex else None
 
     def main(self):
         root = Directory(self.script_path, self.logger, self.dst, self.src, '', self.ignore_regex)
