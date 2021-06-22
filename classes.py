@@ -149,11 +149,16 @@ class Directory(Unit):
 
     def check_path(self, path):
         upper = os.path.split(path)[0]
-        if len(self.get_meta(upper)) == 2:
+        upper_meta = self.get_meta(upper)
+        self.logger.debug(f'upper_meta: {upper_meta}')
+        if len(upper_meta) == 2:
             self.check_path(upper)
             self.mkdir(path)
-        elif len(self.get_meta(path)) == 2:
-            self.mkdir(path)
+        else:
+            path_meta = self.get_meta(path)
+            self.logger.debug(f'path_meta: {path_meta}')
+            if len(path_meta) == 2:
+                self.mkdir(path)
 
     def mkdir(self, path):
         self.logger.info(f'mkdir {path}')
