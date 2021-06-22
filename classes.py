@@ -127,10 +127,12 @@ class Directory(Unit):
         super(Directory, self).__init__(script_path, logger, dst, local_path, relative_path)
         self.ignore_regex = ignore_regex
 
-        self.check_path(self.remote_path)
+        self.flag = self.check_path(self.remote_path)
         self.logger.debug(f'new directory {local_path} --> {self.remote_path}')
 
     def sub_init(self):
+        if self.flag:
+            return 1
         self.sub_file = []
         self.sub_directory = []
         for name in os.listdir(self.local_path):
@@ -150,15 +152,20 @@ class Directory(Unit):
     def check_path(self, path):
         upper = os.path.split(path)[0]
         upper_meta = self.get_meta(upper)
-        self.logger.debug(f'upper_meta: {upper_meta}')
         if len(upper_meta) == 2:
-            self.check_path(upper)
+            self.logger.debug(f'upper_meta: {upper_meta}')
+            if re.search('重新登录', upper_meta[1]):
+                return False
+            return self.check_path(upper)
             self.mkdir(path)
         else:
             path_meta = self.get_meta(path)
-            self.logger.debug(f'path_meta: {path_meta}')
             if len(path_meta) == 2:
+                if re.search('重新登录', path_meta[1]):
+                    return False
+                self.logger.debug(f'path_meta: {path_meta}')
                 self.mkdir(path)
+            return True
 
     def mkdir(self, path):
         self.logger.info(f'mkdir {path}')
