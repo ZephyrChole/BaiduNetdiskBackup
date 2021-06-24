@@ -57,7 +57,6 @@ class Unit:
 class File(Unit):
     def __init__(self, local_path, relative_path):
         super(File, self).__init__(local_path, relative_path)
-        self.size = os.path.getsize(self.local_path)
         LOGGER.debug(f'new file {local_path} --> {self.remote_path}')
 
     def upload(self):
@@ -143,6 +142,7 @@ class Backup:
         self.loop(root)
 
     def loop(self, node: Directory):
+        node.sub_init()
         for f in node.sub_file:
             f.upload()
         for d in node.sub_directory:
