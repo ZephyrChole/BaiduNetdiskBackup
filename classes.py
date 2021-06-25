@@ -139,7 +139,8 @@ class Backup:
         SRC = src
         DST = dst
         LOGGER = get_logger('backup', LogSetting(logging.DEBUG, has_console, has_file))
-        IGNORE_RE = re.compile(ignore_regex) if ignore_regex else None
+        if ignore_regex is not None:
+            IGNORE_RE = re.compile(ignore_regex)
 
     def main(self):
         root = Directory(SRC, '')
