@@ -18,7 +18,7 @@ def get_logger(name, log_setting: LogSetting):
     has_console = log_setting.hasConsole
     has_file = log_setting.hasFile
 
-    formatter = logging.Formatter("%(asctime)s %(filename)s %(levelname)s: %(message)s")
+    formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s: %(message)s")
     logger = logging.getLogger(name)
     logger.setLevel(level)
 
@@ -82,7 +82,7 @@ class Directory(Unit):
 
     # noinspection PyUnresolvedReferences
     def sub_init(self):
-        if self.make_ready(self.remote_path):
+        if self.make_ready():
             for name in os.listdir(self.local_path):
                 local_path = f'{self.local_path}/{name}'
                 relative_path = f'{self.relative_path}/{name}' if len(self.relative_path) else name
@@ -93,6 +93,8 @@ class Directory(Unit):
                         self.sub_file.append(File(local_path, relative_path))
                 else:
                     self.sub_directory.append(Directory(local_path, relative_path))
+        else:
+            print(1)
 
     def make_ready(self, path=None):
         def is_error(r):
@@ -112,12 +114,14 @@ class Directory(Unit):
                 self.mkdir(path)
                 return True
             else:
+                LOGGER.error('not login!')
                 return False
         else:
             path_meta = self.get_meta(path)
             if is_error(path_meta):
                 LOGGER.debug(f'path_meta: {path_meta}')
                 self.mkdir(path)
+            return True
 
     def mkdir(self, path):
         LOGGER.info(f'mkdir {path}')
@@ -152,5 +156,5 @@ class Backup:
 SCRIPT_PATH = None
 SRC = None
 DST = None
-LOGGER = get_logger('backup', LogSetting(logging.DEBUG, True, True))
+LOGGER = get_logger('backup', LogSetting(logging.DEBUG, False, False))
 IGNORE_RE = None
