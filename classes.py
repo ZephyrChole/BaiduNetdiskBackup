@@ -101,7 +101,6 @@ class Directory(Unit):
             if is_login(upper_meta[1]):
                 self.make_ready(upper)
                 self.mkdir(path)
-                return True
             else:
                 LOGGER.error('not login!')
                 return False
@@ -110,7 +109,7 @@ class Directory(Unit):
             if is_error(path_meta):
                 LOGGER.debug(f'path_meta: {path_meta}')
                 self.mkdir(path)
-            return True
+        return True
 
     def mkdir(self, path):
         LOGGER.info(f'mkdir {path}')
