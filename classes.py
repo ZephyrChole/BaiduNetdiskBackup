@@ -90,20 +90,20 @@ class Directory(Unit):
             # not exist or not login
             return len(r) == 2
 
-        def is_login(r):
-            return not re.search('重新登录', r)
+        def need_login(r):
+            return re.search('重新登录', r)
 
         path = self.remote_path if path is None else path
         upper = os.path.split(path)[0]
         upper_meta = self.get_meta(upper)
         if is_error(upper_meta):
             LOGGER.debug(f'upper_meta: {upper_meta}')
-            if is_login(upper_meta[1]):
-                self.make_ready(upper)
-                self.mkdir(path)
-            else:
+            if need_login(upper_meta[1]):
                 LOGGER.error('not login!')
                 return False
+            else:
+                self.make_ready(upper)
+                self.mkdir(path)
         else:
             path_meta = self.get_meta(path)
             if is_error(path_meta):
@@ -132,18 +132,18 @@ class Backup:
 
     def main(self):
         root = Directory(SRC, '')
-        self.loop(root)
+        self.handle_directory(root)
 
-    def loop(self, node: Directory):
+    def handle_directory(self, node: Directory):
         node.sub_init()
         for f in node.sub_file:
             f.upload()
         for d in node.sub_directory:
-            self.loop(d)
+            self.handle_directory(d)
 
 
 SCRIPT_PATH = None
 SRC = None
 DST = None
-LOGGER = get_logger('backup', logging.DEBUG, has_console=False, has_file=False)
+LOGGER = logging
 IGNORE_RE = None
