@@ -6,19 +6,8 @@ import subprocess
 import logging
 
 
-class LogSetting:
-    def __init__(self, level: logging.INFO, has_donsole, has_file):
-        self.level = level
-        self.hasConsole = has_donsole
-        self.hasFile = has_file
-
-
-def get_logger(name, log_setting: LogSetting):
-    level = log_setting.level
-    has_console = log_setting.hasConsole
-    has_file = log_setting.hasFile
-
-    formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s: %(message)s")
+def get_logger(name, level, has_console, has_file):
+    formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
     logger = logging.getLogger(name)
     logger.setLevel(level)
 
@@ -94,7 +83,7 @@ class Directory(Unit):
                 else:
                     self.sub_directory.append(Directory(local_path, relative_path))
         else:
-            print(1)
+            LOGGER.error('not ready!')
 
     def make_ready(self, path=None):
         def is_error(r):
@@ -138,7 +127,7 @@ class Backup:
         SCRIPT_PATH = script_path
         SRC = src
         DST = dst
-        LOGGER = get_logger('backup', LogSetting(logging.DEBUG, has_console, has_file))
+        LOGGER = get_logger('backup', logging.DEBUG, has_console, has_file)
         if ignore_regex is not None:
             IGNORE_RE = re.compile(ignore_regex)
 
@@ -157,5 +146,5 @@ class Backup:
 SCRIPT_PATH = None
 SRC = None
 DST = None
-LOGGER = get_logger('backup', LogSetting(logging.DEBUG, False, False))
+LOGGER = get_logger('backup', logging.DEBUG, has_console=False, has_file=False)
 IGNORE_RE = None
