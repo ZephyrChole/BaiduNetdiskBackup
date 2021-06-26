@@ -41,6 +41,8 @@ class Unit:
     def get_meta(self, path=None):
         if path is None:
             path = self.remote_path
+        else:
+            pass
         return self.start_popen([SCRIPT_PATH, 'meta', path])
 
     def wrapped_logger(self, level, message):
@@ -76,15 +78,18 @@ class Directory(Unit):
         self.sub_file = []
         self.sub_directory = []
 
-    # noinspection PyUnresolvedReferences
     def sub_init(self):
+        # noinspection PyUnresolvedReferences
+        def is_ignore(n):
+            return IGNORE_RE is not None and IGNORE_RE.search(n)
+
         self.wrapped_logger(logging.INFO, f'{self.relative_path} sub init start')
         if self.make_ready():
             for name in os.listdir(self.local_path):
                 local_path = f'{self.local_path}/{name}'
                 relative_path = f'{self.relative_path}/{name}' if len(self.relative_path) else name
                 if os.path.isfile(local_path):
-                    if IGNORE_RE is not None and IGNORE_RE.search(name):
+                    if is_ignore(name):
                         pass
                     else:
                         self.sub_file.append(File(local_path, relative_path))
@@ -118,6 +123,8 @@ class Directory(Unit):
             if is_error(path_meta):
                 self.wrapped_logger(logging.DEBUG, f'path_meta: {path_meta}')
                 self.mkdir(path)
+            else:
+                pass
         return True
 
     def mkdir(self, path):
