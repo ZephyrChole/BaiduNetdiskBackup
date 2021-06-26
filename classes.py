@@ -4,6 +4,7 @@ import sys
 import time
 import subprocess
 import logging
+from functools import wraps
 
 
 def get_logger(name, level, has_console, has_file):
@@ -81,20 +82,27 @@ class Directory(Unit):
         def is_ignore(n):
             return IGNORE_RE is not None and IGNORE_RE.search(n)
 
+        # noinspection PyUnresolvedReferences
+        def is_include(n):
+            return INCLUDE_RE is None or INCLUDE_RE.search(n)
+
         self.wrapped_logger(logging.INFO, f'{self.relative_path} sub init start')
-        if self.make_ready():
+        if not self.make_ready():
+            self.wrapped_logger(logging.ERROR, 'not ready!')
+        else:
             for name in os.listdir(self.local_path):
                 local_path = f'{self.local_path}/{name}'
                 relative_path = f'{self.relative_path}/{name}' if len(self.relative_path) else name
                 if os.path.isfile(local_path):
-                    if is_ignore(name):
-                        self.wrapped_logger(logging.DEBUG, 'ignore')
+                    if not is_include(name):
+                        self.wrapped_logger(logging.DEBUG, 'not include')
                     else:
-                        self.sub_file.append(File(local_path, relative_path))
+                        if is_ignore(name):
+                            self.wrapped_logger(logging.DEBUG, 'ignore')
+                        else:
+                            self.sub_file.append(File(local_path, relative_path))
                 else:
                     self.sub_directory.append(Directory(local_path, relative_path))
-        else:
-            self.wrapped_logger(logging.ERROR, 'not ready!')
         self.wrapped_logger(logging.INFO, 'sub init finished')
 
     def make_ready(self, path=None):
@@ -130,18 +138,21 @@ class Directory(Unit):
 
 
 class Backup:
-    def __init__(self, script_path, src, dst, has_console, has_file, ignore_regex=None):
+    def __init__(self, script_path, src, dst, has_console, has_file, ignore_regex=None, include_regex=None):
         global SCRIPT_PATH
         global SRC
         global DST
         global LOGGER
         global IGNORE_RE
+        global INCLUDE_RE
         SCRIPT_PATH = script_path
         SRC = src
         DST = dst
         LOGGER = get_logger('backup', logging.DEBUG, has_console, has_file)
         if ignore_regex is not None:
             IGNORE_RE = re.compile(ignore_regex)
+        if include_regex is not None:
+            INCLUDE_RE = re.compile(include_regex)
 
     def main(self):
         root = Directory(SRC, '')
@@ -160,4 +171,5 @@ SCRIPT_PATH = None
 SRC = None
 DST = None
 LOGGER = logging
+INCLUDE_RE = None
 IGNORE_RE = None
