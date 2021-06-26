@@ -35,6 +35,7 @@ class Unit:
     def start_popen(parameters):
         p = subprocess.Popen(parameters, stdout=subprocess.PIPE)
         p.wait()
+        p.terminate()
         return list(map(lambda x: x.decode('utf-8').strip(), p.stdout.readlines()))
 
     def get_meta(self, path=None):
@@ -133,6 +134,7 @@ class Backup:
     def main(self):
         root = Directory(SRC, '')
         self.handle_directory(root)
+        LOGGER.debug('exit')
 
     def handle_directory(self, node: Directory):
         node.sub_init()
