@@ -53,13 +53,13 @@ class Unit:
 class File(Unit):
     def __init__(self, local_path, relative_path):
         super(File, self).__init__(local_path, relative_path)
-        self.wrapped_logger(logging.INFO, f'{local_path} --> {self.remote_path} linked')
+        self.wrapped_logger(logging.INFO, f'{self.relative_path}  linked')
 
     def upload(self):
         if self.has_info():
-            self.wrapped_logger(logging.INFO, f'{self.local_path} --> {self.remote_path} skip')
+            self.wrapped_logger(logging.INFO, f'{self.relative_path} skip')
         else:
-            self.wrapped_logger(logging.INFO, f'{self.local_path} --> {self.remote_path} start upload')
+            self.wrapped_logger(logging.INFO, f'{self.relative_path} start upload')
             self.start_upload()
 
     def start_upload(self):
@@ -73,12 +73,13 @@ class File(Unit):
 class Directory(Unit):
     def __init__(self, local_path, relative_path):
         super(Directory, self).__init__(local_path, relative_path)
-        self.wrapped_logger(logging.INFO, f'{local_path}/ --> {self.remote_path} linked')
+        self.wrapped_logger(logging.INFO, f'{self.relative_path}/ linked')
         self.sub_file = []
         self.sub_directory = []
 
     # noinspection PyUnresolvedReferences
     def sub_init(self):
+        self.wrapped_logger(logging.INFO, f'{self.relative_path} sub init start')
         if self.make_ready():
             for name in os.listdir(self.local_path):
                 local_path = f'{self.local_path}/{name}'
@@ -92,6 +93,7 @@ class Directory(Unit):
                     self.sub_directory.append(Directory(local_path, relative_path))
         else:
             self.wrapped_logger(logging.ERROR, 'not ready!')
+        self.wrapped_logger(logging.INFO, 'sub init finished')
 
     def make_ready(self, path=None):
         def is_error(r):
