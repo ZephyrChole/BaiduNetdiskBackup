@@ -41,8 +41,6 @@ class Unit:
     def get_meta(self, path=None):
         if path is None:
             path = self.remote_path
-        else:
-            pass
         return self.start_popen([SCRIPT_PATH, 'meta', path])
 
     def wrapped_logger(self, level, message):
@@ -110,6 +108,7 @@ class Directory(Unit):
         path = self.remote_path if path is None else path
         upper = os.path.split(path)[0]
         upper_meta = self.get_meta(upper)
+
         if is_error(upper_meta):
             self.wrapped_logger(logging.DEBUG, f'upper_meta: {upper_meta}')
             if need_login(upper_meta[1]):
@@ -123,8 +122,6 @@ class Directory(Unit):
             if is_error(path_meta):
                 self.wrapped_logger(logging.DEBUG, f'path_meta: {path_meta}')
                 self.mkdir(path)
-            else:
-                pass
         return True
 
     def mkdir(self, path):
