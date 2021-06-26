@@ -63,8 +63,7 @@ class File(Unit):
             self.start_upload()
 
     def start_upload(self):
-        pass
-        # self.start_popen([SCRIPT_PATH, 'upload', self.local_path, os.path.split(self.remote_path)[0]])
+        self.start_popen([SCRIPT_PATH, 'upload', self.local_path, os.path.split(self.remote_path)[0]])
 
     def has_info(self):
         return len(self.get_meta()) != 2
