@@ -90,7 +90,7 @@ class Directory(Unit):
                 relative_path = f'{self.relative_path}/{name}' if len(self.relative_path) else name
                 if os.path.isfile(local_path):
                     if is_ignore(name):
-                        pass
+                        self.wrapped_logger(logging.DEBUG, 'ignore')
                     else:
                         self.sub_file.append(File(local_path, relative_path))
                 else:
