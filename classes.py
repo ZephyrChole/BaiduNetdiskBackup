@@ -18,7 +18,14 @@ def get_logger(name, level, has_console, has_file):
         ch.setFormatter(formatter)
         logger.addHandler(ch)
     if has_file:
-        fh = logging.FileHandler(f'./log/{time.strftime("%Y-%m-%d", time.localtime())}.log', encoding='utf-8')
+        count = 0
+        while True:
+            path = f'./log/{time.strftime("%Y-%m-%d", time.localtime())}-{count}.log'
+            if os.path.exists(path):
+                count += 1
+            else:
+                break
+        fh = logging.FileHandler(path, encoding='utf-8')
         fh.setLevel(level)
         fh.setFormatter(formatter)
         logger.addHandler(fh)
