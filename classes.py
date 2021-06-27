@@ -40,16 +40,28 @@ class Unit:
         self.remote_path = f'{DST}/{relative_path}' if len(relative_path) else '/'
 
     @staticmethod
-    def start_popen(parameters):
-        p = subprocess.Popen(parameters, stdout=subprocess.PIPE)
-        p.wait()
-        p.terminate()
-        return list(map(lambda x: x.decode('utf-8').strip(), p.stdout.readlines()))
+    def start_popen(parameters, timeout=None):
+        count = 0
+        while True:
+            try:
+                p = subprocess.Popen(parameters, stdout=subprocess.PIPE)
+                if timeout is None:
+                    p.wait()
+                else:
+                    p.wait(timeout)
+                p.terminate()
+                return list(map(lambda x: x.decode('utf-8').strip(), p.stdout.readlines()))
+            except subprocess.TimeoutExpired:
+                count += 1
+                LOGGER.warning(f'timeout {count}')
+                if count > 3:
+                    LOGGER.warning('upload failure')
+                    return ()
 
     def get_meta(self, path=None):
         if path is None:
             path = self.remote_path
-        return self.start_popen([SCRIPT_PATH, 'meta', path])
+        return self.start_popen([SCRIPT_PATH, 'meta', path], 60)
 
     def wrapped_logger(self, level, message):
         level2func = {logging.DEBUG: LOGGER.debug, logging.INFO: LOGGER.info, logging.WARNING: LOGGER.warning,
@@ -61,6 +73,7 @@ class Unit:
 class File(Unit):
     def __init__(self, local_path, relative_path):
         super(File, self).__init__(local_path, relative_path)
+        self.size = os.path.getsize(local_path)
         self.wrapped_logger(logging.INFO, f'{self.relative_path}  linked')
 
     def upload(self):
@@ -71,10 +84,14 @@ class File(Unit):
             self.start_upload()
 
     def start_upload(self):
-        self.start_popen([SCRIPT_PATH, 'upload', self.local_path, os.path.split(self.remote_path)[0]])
+        # per sec
+        least_speed = 1024 * 1024 * 0.8
+        timeout = self.size / least_speed
+        self.start_popen([SCRIPT_PATH, 'upload', self.local_path, os.path.split(self.remote_path)[0]], timeout)
 
     def has_info(self):
-        return len(self.get_meta()) != 2
+        result = self.get_meta()
+        return len(result) != 0 and len(result) != 2
 
 
 class Directory(Unit):
