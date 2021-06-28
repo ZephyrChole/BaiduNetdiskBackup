@@ -4,10 +4,9 @@ import sys
 import time
 import subprocess
 import logging
-from functools import wraps
 
 
-def get_logger(name, level, has_console, has_file):
+def get_logger(name, level, has_console=False, has_file=False):
     formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
     logger = logging.getLogger(name)
     logger.setLevel(level)
@@ -63,24 +62,18 @@ class Unit:
             path = self.remote_path
         return self.start_popen([SCRIPT_PATH, 'meta', path], 60)
 
-    def wrapped_logger(self, level, message):
-        level2func = {logging.DEBUG: LOGGER.debug, logging.INFO: LOGGER.info, logging.WARNING: LOGGER.warning,
-                      logging.ERROR: LOGGER.error, logging.FATAL: LOGGER.fatal}
-        indent = self.relative_path.count('/') * '    '
-        level2func.get(level, LOGGER.info)('{}{}'.format(indent, message))
-
 
 class File(Unit):
     def __init__(self, local_path, relative_path):
         super(File, self).__init__(local_path, relative_path)
         self.size = os.path.getsize(local_path)
-        self.wrapped_logger(logging.INFO, f'{self.relative_path}  linked')
+        LOGGER.info(self.relative_path, f'{self.relative_path}  linked')
 
     def upload(self):
         if self.has_info():
-            self.wrapped_logger(logging.INFO, f'{self.relative_path} skip')
+            LOGGER.info(self.relative_path, f'{self.relative_path}  skip')
         else:
-            self.wrapped_logger(logging.INFO, f'{self.relative_path} start upload')
+            LOGGER.info(self.relative_path, f'{self.relative_path}  start upload')
             self.start_upload()
 
     def start_upload(self):
@@ -97,7 +90,7 @@ class File(Unit):
 class Directory(Unit):
     def __init__(self, local_path, relative_path):
         super(Directory, self).__init__(local_path, relative_path)
-        self.wrapped_logger(logging.INFO, f'{self.relative_path}/ linked')
+        LOGGER.info(self.relative_path, f'{self.relative_path}/  linked')
         self.sub_file = []
         self.sub_directory = []
 
@@ -110,24 +103,24 @@ class Directory(Unit):
         def is_include(n):
             return INCLUDE_RE is None or INCLUDE_RE.search(n)
 
-        self.wrapped_logger(logging.INFO, f'{self.relative_path} sub init start')
+        LOGGER.info(self.relative_path, f'{self.relative_path}  sub init start')
         if not self.make_ready():
-            self.wrapped_logger(logging.ERROR, 'not ready!')
+            LOGGER.info(self.relative_path, 'not ready!')
         else:
             for name in os.listdir(self.local_path):
                 local_path = f'{self.local_path}/{name}'
                 relative_path = f'{self.relative_path}/{name}' if len(self.relative_path) else name
                 if os.path.isfile(local_path):
                     if not is_include(name):
-                        self.wrapped_logger(logging.DEBUG, 'not include')
+                        LOGGER.debug(self.relative_path, 'not include')
                     else:
                         if is_ignore(name):
-                            self.wrapped_logger(logging.DEBUG, 'ignore')
+                            LOGGER.debug(self.relative_path, 'ignore')
                         else:
                             self.sub_file.append(File(local_path, relative_path))
                 else:
                     self.sub_directory.append(Directory(local_path, relative_path))
-        self.wrapped_logger(logging.INFO, 'sub init finished')
+        LOGGER.info(self.relative_path, 'sub init finished')
 
     def make_ready(self, path=None):
         def is_error(r):
@@ -142,9 +135,9 @@ class Directory(Unit):
         upper_meta = self.get_meta(upper)
 
         if is_error(upper_meta):
-            self.wrapped_logger(logging.DEBUG, f'upper_meta: {upper_meta}')
+            LOGGER.debug(self.relative_path, f'upper_meta: {upper_meta}')
             if need_login(upper_meta[1]):
-                self.wrapped_logger(logging.ERROR, 'not login!')
+                LOGGER.error(self.relative_path, 'not login!')
                 return False
             else:
                 self.make_ready(upper)
@@ -152,12 +145,12 @@ class Directory(Unit):
         else:
             path_meta = self.get_meta(path)
             if is_error(path_meta):
-                self.wrapped_logger(logging.DEBUG, f'path_meta: {path_meta}')
+                LOGGER.debug(self.relative_path, f'path_meta: {path_meta}')
                 self.mkdir(path)
         return True
 
     def mkdir(self, path):
-        self.wrapped_logger(logging.INFO, f'mkdir {path}')
+        LOGGER.info(self.relative_path, f'mkdir {path}')
         self.start_popen([SCRIPT_PATH, 'mkdir', path])
 
 
@@ -166,13 +159,19 @@ class Backup:
         global SCRIPT_PATH
         global SRC
         global DST
+        global LOGGER_
         global LOGGER
         global IGNORE_RE
         global INCLUDE_RE
         SCRIPT_PATH = script_path
         SRC = src
         DST = dst
-        LOGGER = get_logger('backup', logging.DEBUG, has_console, has_file)
+        LOGGER_ = get_logger('backup', logging.DEBUG, has_console, has_file)
+        LOGGER = get_logger('backup_', logging.DEBUG)
+        LOGGER.debug = lambda path, msg: LOGGER_.debug(f"{path.count('/') * '    '}{msg}")
+        LOGGER.info = lambda path, msg: LOGGER_.info(f"{path.count('/') * '    '}{msg}")
+        LOGGER.warning = lambda path, msg: LOGGER_.warning(f"{path.count('/') * '    '}{msg}")
+        LOGGER.error = lambda path, msg: LOGGER_.error(f"{path.count('/') * '    '}{msg}")
         if ignore_regex is not None:
             IGNORE_RE = re.compile(ignore_regex)
         if include_regex is not None:
@@ -194,6 +193,7 @@ class Backup:
 SCRIPT_PATH = None
 SRC = None
 DST = None
+LOGGER_ = logging
 LOGGER = logging
 INCLUDE_RE = None
 IGNORE_RE = None
