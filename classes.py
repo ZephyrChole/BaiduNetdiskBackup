@@ -112,10 +112,10 @@ class Directory(Unit):
                 relative_path = f'{self.relative_path}/{name}' if len(self.relative_path) else name
                 if os.path.isfile(local_path):
                     if not is_include(name):
-                        LOGGER.debug(self.relative_path, 'not include')
+                        LOGGER.debug(self.relative_path, f'{self.relative_path} not include')
                     else:
                         if is_ignore(name):
-                            LOGGER.debug(self.relative_path, 'ignore')
+                            LOGGER.debug(self.relative_path, f'{self.relative_path} ignore')
                         else:
                             self.sub_file.append(File(local_path, relative_path))
                 else:
