@@ -38,8 +38,7 @@ class Unit:
         self.relative_path = relative_path
         self.remote_path = f'{DST}/{relative_path}' if len(relative_path) else '/'
 
-    @staticmethod
-    def start_popen(parameters, timeout=None):
+    def start_popen(self, parameters, timeout=None):
         count = 0
         while True:
             try:
@@ -52,9 +51,9 @@ class Unit:
                 return list(map(lambda x: x.decode('utf-8').strip(), p.stdout.readlines()))
             except subprocess.TimeoutExpired:
                 count += 1
-                LOGGER.warning(f'timeout {count}')
+                LOGGER.warning(self.relative_path, f'timeout {count}')
                 if count > 3:
-                    LOGGER.warning('upload failure')
+                    LOGGER.warning(self.relative_path, 'upload failure')
                     return ()
 
     def get_meta(self, path=None):
@@ -167,7 +166,7 @@ class Backup:
         SRC = src
         DST = dst
         LOGGER_ = get_logger('backup', logging.DEBUG, has_console, has_file)
-        LOGGER = get_logger('backup_', logging.DEBUG)
+        LOGGER = logging.getLogger('backup_')
         LOGGER.debug = lambda path, msg: LOGGER_.debug(f"{path.count('/') * '    '}{msg}")
         LOGGER.info = lambda path, msg: LOGGER_.info(f"{path.count('/') * '    '}{msg}")
         LOGGER.warning = lambda path, msg: LOGGER_.warning(f"{path.count('/') * '    '}{msg}")
