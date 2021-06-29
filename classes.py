@@ -178,7 +178,7 @@ class Backup:
             INCLUDE_RE = re.compile(include_regex)
 
     def main(self):
-        LOGGER.info(f'pid: {os.getpid()}')
+        LOGGER.info('', f'pid: {os.getpid()}')
         root = Directory(SRC, '')
         self.handle_directory(root)
         LOGGER.debug('exit')
