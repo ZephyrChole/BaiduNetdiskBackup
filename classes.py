@@ -119,6 +119,8 @@ class Directory(Unit):
                             self.sub_file.append(File(local_path, relative_path))
                 else:
                     self.sub_directory.append(Directory(local_path, relative_path))
+        self.sub_file.sort(key=lambda f: f.name)
+        self.sub_directory.sort(key=lambda d: d.name)
         LOGGER.info(self.relative_path, 'sub init finished')
 
     def make_ready(self, path=None):
