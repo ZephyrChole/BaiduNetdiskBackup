@@ -77,7 +77,7 @@ class File(Unit):
 
     def start_upload(self):
         # per sec
-        least_speed = 1024 * 1024 * 0.8
+        least_speed = 1024 * 1024 * 0.8 * 0.8
         timeout = self.size / least_speed + 15 * 60
         self.start_popen([SCRIPT_PATH, 'upload', self.local_path, os.path.split(self.remote_path)[0]], timeout)
 
