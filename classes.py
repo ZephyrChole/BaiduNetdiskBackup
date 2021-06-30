@@ -66,13 +66,13 @@ class File(Unit):
     def __init__(self, local_path, relative_path):
         super(File, self).__init__(local_path, relative_path)
         self.size = os.path.getsize(local_path)
-        LOGGER.info(self.relative_path, f'{self.relative_path}  linked')
+        LOGGER.info(self.relative_path, f'{self.name}  linked')
 
     def upload(self):
         if self.has_info():
-            LOGGER.info(self.relative_path, f'{self.relative_path}  skip')
+            LOGGER.info(self.relative_path, f'{self.name}  skip')
         else:
-            LOGGER.info(self.relative_path, f'{self.relative_path}  start upload')
+            LOGGER.info(self.relative_path, f'{self.name}  start upload')
             self.start_upload()
 
     def start_upload(self):
@@ -92,7 +92,7 @@ class File(Unit):
 class Directory(Unit):
     def __init__(self, local_path, relative_path):
         super(Directory, self).__init__(local_path, relative_path)
-        LOGGER.info(self.relative_path, f'{self.relative_path}/  linked')
+        LOGGER.info(self.relative_path, f'{self.name}/  linked')
         self.sub_file = []
         self.sub_directory = []
 
@@ -105,7 +105,7 @@ class Directory(Unit):
         def is_include(n):
             return INCLUDE_RE is None or INCLUDE_RE.search(n)
 
-        LOGGER.info(self.relative_path, 'sub init start')
+        LOGGER.info(self.relative_path, f'sub init start {self.relative_path}')
         if not self.make_ready():
             LOGGER.info(self.relative_path, 'not ready!')
         else:
@@ -114,10 +114,10 @@ class Directory(Unit):
                 relative_path = f'{self.relative_path}/{name}' if len(self.relative_path) else name
                 if os.path.isfile(local_path):
                     if not is_include(name):
-                        LOGGER.debug(self.relative_path, f'{self.relative_path} not include')
+                        LOGGER.debug(self.relative_path, f'{name} not include')
                     else:
                         if is_ignore(name):
-                            LOGGER.debug(self.relative_path, f'{self.relative_path} ignore')
+                            LOGGER.debug(self.relative_path, f'{name} ignore')
                         else:
                             self.sub_file.append(File(local_path, relative_path))
                 else:
@@ -189,6 +189,7 @@ class Backup:
 
     def handle_directory(self, node: Directory):
         node.sub_init()
+        LOGGER.info(node.relative_path, )
         for f in node.sub_file:
             f.upload()
         for d in node.sub_directory:
