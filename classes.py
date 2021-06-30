@@ -54,7 +54,7 @@ class Unit:
                 LOGGER.warning(self.relative_path, f'timeout {count}')
                 if count >= 3:
                     LOGGER.warning(self.relative_path, 'upload failure')
-                    return ()
+                    return False
 
     def get_meta(self, path=None):
         if path is None:
@@ -79,7 +79,10 @@ class File(Unit):
         # per sec
         least_speed = 1024 * 1024 * 0.8 * 0.8
         timeout = self.size / least_speed + 15 * 60
-        self.start_popen([SCRIPT_PATH, 'upload', self.local_path, os.path.split(self.remote_path)[0]], timeout)
+        if isinstance(
+                self.start_popen([SCRIPT_PATH, 'upload', self.local_path, os.path.split(self.remote_path)[0]], timeout),
+                list):
+            LOGGER.info(self.relative_path, 'upload success')
 
     def has_info(self):
         result = self.get_meta()
@@ -102,7 +105,7 @@ class Directory(Unit):
         def is_include(n):
             return INCLUDE_RE is None or INCLUDE_RE.search(n)
 
-        LOGGER.info(self.relative_path, f'{self.relative_path}  sub init start')
+        LOGGER.info(self.relative_path, 'sub init start')
         if not self.make_ready():
             LOGGER.info(self.relative_path, 'not ready!')
         else:
