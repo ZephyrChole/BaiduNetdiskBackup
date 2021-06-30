@@ -52,7 +52,7 @@ class Unit:
             except subprocess.TimeoutExpired:
                 count += 1
                 LOGGER.warning(self.relative_path, f'timeout {count}')
-                if count > 3:
+                if count >= 3:
                     LOGGER.warning(self.relative_path, 'upload failure')
                     return ()
 
@@ -78,7 +78,7 @@ class File(Unit):
     def start_upload(self):
         # per sec
         least_speed = 1024 * 1024 * 0.8
-        timeout = self.size / least_speed
+        timeout = self.size / least_speed + 15 * 60
         self.start_popen([SCRIPT_PATH, 'upload', self.local_path, os.path.split(self.remote_path)[0]], timeout)
 
     def has_info(self):
