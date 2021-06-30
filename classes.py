@@ -53,7 +53,8 @@ class Unit:
                 count += 1
                 LOGGER.warning(self.relative_path, f'timeout {count}')
                 if count >= 3:
-                    LOGGER.warning(self.relative_path, 'upload failure')
+                    # upload failure
+                    LOGGER.warning(self.relative_path, '↑ ✖')
                     return False
 
     def get_meta(self, path=None):
@@ -66,13 +67,15 @@ class File(Unit):
     def __init__(self, local_path, relative_path):
         super(File, self).__init__(local_path, relative_path)
         self.size = os.path.getsize(local_path)
-        LOGGER.info(self.relative_path, f'{self.name}  linked')
+        LOGGER.info(self.relative_path, f'{self.name}  ~')
 
     def upload(self):
         if self.has_info():
-            LOGGER.info(self.relative_path, f'{self.name}  skip')
+            # skip
+            LOGGER.info(self.relative_path, f'{self.name}  >>')
         else:
-            LOGGER.info(self.relative_path, f'{self.name}  start upload')
+            # start upload
+            LOGGER.info(self.relative_path, f'{self.name}  ↑')
             self.start_upload()
 
     def start_upload(self):
@@ -82,7 +85,8 @@ class File(Unit):
         if isinstance(
                 self.start_popen([SCRIPT_PATH, 'upload', self.local_path, os.path.split(self.remote_path)[0]], timeout),
                 list):
-            LOGGER.info(self.relative_path, 'upload success')
+            # upload success
+            LOGGER.info(self.relative_path, '↑ ✔')
 
     def has_info(self):
         result = self.get_meta()
@@ -92,7 +96,7 @@ class File(Unit):
 class Directory(Unit):
     def __init__(self, local_path, relative_path):
         super(Directory, self).__init__(local_path, relative_path)
-        LOGGER.info(self.relative_path, f'{self.name}/  linked')
+        LOGGER.info(self.relative_path, f'{self.name}/  ~')
         self.sub_file = []
         self.sub_directory = []
 
@@ -105,7 +109,7 @@ class Directory(Unit):
         def is_include(n):
             return INCLUDE_RE is None or INCLUDE_RE.search(n)
 
-        LOGGER.info(self.relative_path, f'sub init start {self.relative_path}')
+        LOGGER.info(self.relative_path, f'(✪ω✪) {self.relative_path}')
         if not self.make_ready():
             LOGGER.info(self.relative_path, 'not ready!')
         else:
@@ -114,17 +118,18 @@ class Directory(Unit):
                 relative_path = f'{self.relative_path}/{name}' if len(self.relative_path) else name
                 if os.path.isfile(local_path):
                     if not is_include(name):
-                        LOGGER.debug(self.relative_path, f'{name} not include')
+                        LOGGER.debug(self.relative_path, f'{name} (。-ω-)zzz not include')
                     else:
                         if is_ignore(name):
-                            LOGGER.debug(self.relative_path, f'{name} ignore')
+                            LOGGER.debug(self.relative_path, f'{name} ┗( ▔, ▔ )┛ ignore')
                         else:
                             self.sub_file.append(File(local_path, relative_path))
                 else:
                     self.sub_directory.append(Directory(local_path, relative_path))
         self.sub_file.sort(key=lambda f: f.name)
         self.sub_directory.sort(key=lambda d: d.name)
-        LOGGER.info(self.relative_path, 'sub init finished')
+        # sub init finished
+        LOGGER.info(self.relative_path, '(ಥ_ಥ)')
 
     def make_ready(self, path=None):
         def is_error(r):
@@ -189,7 +194,6 @@ class Backup:
 
     def handle_directory(self, node: Directory):
         node.sub_init()
-        LOGGER.info(node.relative_path, )
         for f in node.sub_file:
             f.upload()
         for d in node.sub_directory:
