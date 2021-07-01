@@ -201,6 +201,8 @@ class Backup:
 
 
 class Examiner:
+    un_uploaded = []
+
     def __init__(self, script_path, src, dst, has_console, has_file, ignore_regex=None, include_regex=None):
         global SCRIPT_PATH
         global SRC
@@ -227,6 +229,7 @@ class Examiner:
         LOGGER.info('', f'pid: {os.getpid()}')
         root = Directory(SRC, '')
         self.handle_directory(root)
+        self.display_un_loaded()
         LOGGER.debug('exit')
 
     def handle_directory(self, node: Directory):
@@ -236,9 +239,13 @@ class Examiner:
                 # LOGGER.info(f.relative_path, f'{f.name}  ✔')
                 pass
             else:
-                LOGGER.info(f.relative_path, f'{f.name}  ✖')
+                self.un_uploaded.append([f.relative_path, f'{f.name}  ✖'])
         for d in node.sub_directory:
             self.handle_directory(d)
+
+    def display_un_loaded(self):
+        for u in self.un_uploaded:
+            LOGGER.info(*u)
 
 
 SCRIPT_PATH = None
