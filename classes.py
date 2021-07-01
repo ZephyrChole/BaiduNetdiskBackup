@@ -200,6 +200,47 @@ class Backup:
             self.handle_directory(d)
 
 
+class Examiner:
+    def __init__(self, script_path, src, dst, has_console, has_file, ignore_regex=None, include_regex=None):
+        global SCRIPT_PATH
+        global SRC
+        global DST
+        global LOGGER_
+        global LOGGER
+        global IGNORE_RE
+        global INCLUDE_RE
+        SCRIPT_PATH = script_path
+        SRC = src
+        DST = dst
+        LOGGER_ = get_logger('examine', logging.DEBUG, has_console, has_file)
+        LOGGER = logging.getLogger('examine_')
+        LOGGER.debug = lambda path, msg: LOGGER_.debug(f"{path.count('/') * '    '}{msg}")
+        LOGGER.info = lambda path, msg: LOGGER_.info(f"{path.count('/') * '    '}{msg}")
+        LOGGER.warning = lambda path, msg: LOGGER_.warning(f"{path.count('/') * '    '}{msg}")
+        LOGGER.error = lambda path, msg: LOGGER_.error(f"{path.count('/') * '    '}{msg}")
+        if ignore_regex is not None:
+            IGNORE_RE = re.compile(ignore_regex)
+        if include_regex is not None:
+            INCLUDE_RE = re.compile(include_regex)
+
+    def main(self):
+        LOGGER.info('', f'pid: {os.getpid()}')
+        root = Directory(SRC, '')
+        self.handle_directory(root)
+        LOGGER.debug('exit')
+
+    def handle_directory(self, node: Directory):
+        node.sub_init()
+        for f in node.sub_file:
+            if f.has_info():
+                # LOGGER.info(f.relative_path, f'{f.name}  ✔')
+                pass
+            else:
+                LOGGER.info(f.relative_path, f'{f.name}  ✖')
+        for d in node.sub_directory:
+            self.handle_directory(d)
+
+
 SCRIPT_PATH = None
 SRC = None
 DST = None
