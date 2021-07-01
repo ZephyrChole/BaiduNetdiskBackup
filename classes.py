@@ -240,7 +240,7 @@ class Examiner:
                 # LOGGER.info(f.relative_path, f'{f.name}  ✔')
                 pass
             else:
-                self.un_uploaded.append([f.relative_path, f'{f.name}  ✖'])
+                self.un_uploaded.append([f.relative_path, f'{f.relative_path}  ✖'])
         for d in node.sub_directory:
             self.handle_directory(d)
 
