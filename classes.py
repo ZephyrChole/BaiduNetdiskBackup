@@ -231,7 +231,7 @@ class Examiner:
         self.handle_directory(root)
         LOGGER_.info('\n' * 10)
         self.display_un_loaded()
-        LOGGER.debug('exit')
+        LOGGER_.debug('exit')
 
     def handle_directory(self, node: Directory):
         node.sub_init()
