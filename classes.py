@@ -214,7 +214,7 @@ class Examiner:
         SCRIPT_PATH = script_path
         SRC = src
         DST = dst
-        LOGGER_ = get_logger('examine', logging.DEBUG, False, False)
+        LOGGER_ = get_logger('examine', logging.DEBUG, has_console, has_file)
         LOGGER = logging.getLogger('examine_')
         LOGGER.debug = lambda path, msg: LOGGER_.debug(f"{path.count('/') * '    '}{msg}")
         LOGGER.info = lambda path, msg: LOGGER_.info(f"{path.count('/') * '    '}{msg}")
@@ -229,8 +229,7 @@ class Examiner:
         LOGGER.info('', f'pid: {os.getpid()}')
         root = Directory(SRC, '')
         self.handle_directory(root)
-        global LOGGER_
-        LOGGER_ = get_logger('examine', logging.DEBUG, True, False)
+        LOGGER_.info('\n' * 10)
         self.display_un_loaded()
         LOGGER.debug('exit')
 
