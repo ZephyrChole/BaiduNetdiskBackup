@@ -36,7 +36,7 @@ class Unit:
         self.local_path = local_path
         self.name = os.path.split(local_path)[1]
         self.relative_path = relative_path
-        self.remote_path = f'{DST}/{relative_path}' if len(relative_path) else '/'
+        self.remote_path = self.join(DST, relative_path)
 
     def start_popen(self, parameters, timeout=None):
         count = 0
@@ -62,6 +62,12 @@ class Unit:
             path = self.remote_path
         return self.start_popen([SCRIPT_PATH, 'meta', path], 60)
 
+    @staticmethod
+    def join(a, *paths):
+        s = '/'.join(paths)
+        a = f'{a}/{s}' if a[-1] != '/' else f'{a}{s}'
+        return a
+
 
 class File(Unit):
     def __init__(self, local_path, relative_path):
@@ -82,9 +88,7 @@ class File(Unit):
         # per sec
         least_speed = 1024 * 1024 * 0.8 * 0.8
         timeout = self.size / least_speed + 15 * 60
-        if isinstance(
-                self.start_popen([SCRIPT_PATH, 'upload', self.local_path, os.path.split(self.remote_path)[0]], timeout),
-                list):
+        if isinstance(self.start_popen([SCRIPT_PATH, 'upload', self.local_path, os.path.split(self.remote_path)[0]], timeout), list):
             # upload success
             LOGGER.info(self.relative_path, '↑ ✔')
 
@@ -114,8 +118,8 @@ class Directory(Unit):
             LOGGER.info(self.relative_path, 'not ready!')
         else:
             for name in os.listdir(self.local_path):
-                local_path = f'{self.local_path}/{name}'
-                relative_path = f'{self.relative_path}/{name}' if len(self.relative_path) else name
+                local_path = self.join(self.local_path, name)
+                relative_path = self.join(self.relative_path, name)
                 if os.path.isfile(local_path):
                     if not is_include(name):
                         LOGGER.debug(self.relative_path, f'{name} (。-ω-)zzz not include')
@@ -230,7 +234,7 @@ class Examiner:
 
     def main(self):
         LOGGER.info('', f'pid: {os.getpid()}')
-        root = Directory(SRC, '')
+        root = Directory(SRC, '/')
         self.handle_directory(root)
         LOGGER_.info('\n' * 10)
         self.display_un_loaded()
