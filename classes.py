@@ -65,8 +65,22 @@ class Unit:
     @staticmethod
     def join(a, *paths):
         s = '/'.join(paths)
-        a = f'{a}/{s}' if a[-1] != '/' else f'{a}{s}'
+        if a[-1] != '/':
+            a = f'{a}/{s}'
+        else:
+            if s[0] != '/':
+                a = f'{a}{s}'
+            else:
+                if len(s) > 1:
+                    a = f'{a}{s[1:]}'
+                else:
+                    pass
         return a
+
+    @staticmethod
+    def split(path):
+        result = re.search('(.+)/([^/]+$)', path)
+        return result.group(1), result.group(2)
 
 
 class File(Unit):
@@ -88,7 +102,9 @@ class File(Unit):
         # per sec
         least_speed = 1024 * 1024 * 0.8 * 0.8
         timeout = self.size / least_speed + 15 * 60
-        if isinstance(self.start_popen([SCRIPT_PATH, 'upload', self.local_path, os.path.split(self.remote_path)[0]], timeout), list):
+        if isinstance(
+                self.start_popen([SCRIPT_PATH, 'upload', self.local_path, self.split(self.remote_path)[0]], timeout),
+                list):
             # upload success
             LOGGER.info(self.relative_path, '↑ ✔')
 
@@ -234,7 +250,7 @@ class Examiner:
 
     def main(self):
         LOGGER.info('', f'pid: {os.getpid()}')
-        root = Directory(SRC, '/')
+        root = Directory(SRC, '')
         self.handle_directory(root)
         LOGGER_.info('\n' * 10)
         self.display_un_loaded()
