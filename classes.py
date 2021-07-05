@@ -165,6 +165,9 @@ class Directory(Unit):
 
 class Backup:
     def __init__(self, script_path, src, dst, has_console, has_file, ignore_regex=None, include_regex=None):
+        def path2indent(p):
+            return (p.count('/') - 1) * '    '
+
         global SCRIPT_PATH
         global SRC
         global DST
@@ -177,10 +180,10 @@ class Backup:
         DST = dst
         LOGGER_ = get_logger('backup', logging.DEBUG, has_console, has_file)
         LOGGER = logging.getLogger('backup_')
-        LOGGER.debug = lambda path, msg: LOGGER_.debug(f"{path.count('/') * '    '}{msg}")
-        LOGGER.info = lambda path, msg: LOGGER_.info(f"{path.count('/') * '    '}{msg}")
-        LOGGER.warning = lambda path, msg: LOGGER_.warning(f"{path.count('/') * '    '}{msg}")
-        LOGGER.error = lambda path, msg: LOGGER_.error(f"{path.count('/') * '    '}{msg}")
+        LOGGER.debug = lambda path, msg: LOGGER_.debug(f"{path2indent(path)}{msg}")
+        LOGGER.info = lambda path, msg: LOGGER_.info(f"{path2indent(path)}{msg}")
+        LOGGER.warning = lambda path, msg: LOGGER_.warning(f"{path2indent(path)}{msg}")
+        LOGGER.error = lambda path, msg: LOGGER_.error(f"{path2indent(path)}{msg}")
         if ignore_regex is not None:
             IGNORE_RE = re.compile(ignore_regex)
         if include_regex is not None:
@@ -188,14 +191,14 @@ class Backup:
 
     def main(self):
         LOGGER.info('', f'pid: {os.getpid()}')
-        root = Directory(SRC, '')
+        root = Directory(SRC, '/')
         self.handle_directory(root)
         LOGGER.debug('exit')
 
     def handle_directory(self, node: Directory):
         node.sub_init()
-        for f in node.sub_file:
-            f.upload()
+        # for f in node.sub_file:
+        #     f.upload()
         for d in node.sub_directory:
             self.handle_directory(d)
 
