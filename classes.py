@@ -197,8 +197,8 @@ class Backup:
 
     def handle_directory(self, node: Directory):
         node.sub_init()
-        # for f in node.sub_file:
-        #     f.upload()
+        for f in node.sub_file:
+            f.upload()
         for d in node.sub_directory:
             self.handle_directory(d)
 
