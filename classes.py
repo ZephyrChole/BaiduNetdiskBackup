@@ -65,7 +65,9 @@ class Unit:
     @staticmethod
     def join(a, *paths):
         s = '/'.join(paths)
-        if a[-1] != '/':
+        if len(a) == 0:
+            a = s
+        elif a[-1] != '/':
             a = f'{a}/{s}'
         else:
             if s[0] != '/':
