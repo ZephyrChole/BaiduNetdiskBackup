@@ -210,10 +210,10 @@ class Backup:
             INCLUDE_RE = re.compile(include_regex)
 
     def main(self):
-        LOGGER.info('', f'pid: {os.getpid()}')
+        LOGGER_.info(f'pid: {os.getpid()}')
         root = Directory(SRC, '/')
         self.handle_directory(root)
-        LOGGER.debug('exit')
+        LOGGER_.debug('exit')
 
     def handle_directory(self, node: Directory):
         node.sub_init()
