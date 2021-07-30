@@ -91,16 +91,16 @@ class File(Unit):
         self.size = os.path.getsize(local_path)
         LOGGER.info(self.relative_path, f'{self.name}  ~')
 
-    def upload(self):
+    def try_upload(self):
         if self.has_info():
             # skip
             LOGGER.info(self.relative_path, f'{self.name}  >>')
         else:
             # start upload
             LOGGER.info(self.relative_path, f'{self.name}  ↑')
-            self.start_upload()
+            self.upload()
 
-    def start_upload(self):
+    def upload(self):
         # per sec
         least_speed = 1024 * 1024 * 0.8 * 0.8
         timeout = self.size / least_speed + 15 * 60
@@ -220,7 +220,7 @@ class Backup:
     def handle_directory(self, node: Directory):
         node.sub_init()
         for f in node.sub_file:
-            f.upload()
+            f.try_upload()
         for d in node.sub_directory:
             self.handle_directory(d)
 
@@ -251,7 +251,7 @@ class Examiner:
             INCLUDE_RE = re.compile(include_regex)
 
     def main(self):
-        LOGGER.info('', f'pid: {os.getpid()}')
+        LOGGER_.info(f'pid: {os.getpid()}')
         root = Directory(SRC, '')
         self.handle_directory(root)
         LOGGER_.info('\n' * 10)
