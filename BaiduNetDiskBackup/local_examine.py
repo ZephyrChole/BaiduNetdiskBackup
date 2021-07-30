@@ -63,6 +63,3 @@ def main(src, tar, include=None, ignore=None):
     for i in un_sync:
         print(i)
 
-
-if __name__ == '__main__':
-    main()

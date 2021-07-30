@@ -188,7 +188,7 @@ class Directory(Unit):
 class Backup:
     def __init__(self, script_path, src, dst, has_console, has_file, ignore_regex=None, include_regex=None):
         def path2indent(p):
-            return (p.count('/') - 1) * '    '
+            return (p.count('/') - 1) * '\t'
 
         global SCRIPT_PATH
         global SRC
