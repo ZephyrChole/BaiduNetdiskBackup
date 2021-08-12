@@ -262,9 +262,9 @@ class Examiner:
         node.sub_init()
         for f in node.sub_file:
             if f.has_info():
-                # LOGGER.info(f.relative_path, f'{f.name}  ✔')
-                pass
+                LOGGER.info(f.relative_path, f'{f.name}  ✔')
             else:
+                LOGGER.info(f.relative_path, f'{f.name}  ✖')
                 self.un_uploaded.append([f.relative_path, f'{f.relative_path}  ✖'])
         for d in node.sub_directory:
             self.handle_directory(d)
