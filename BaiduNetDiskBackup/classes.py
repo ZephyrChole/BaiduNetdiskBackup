@@ -264,6 +264,7 @@ class Examiner:
             if f.has_info():
                 LOGGER.info(f.relative_path, f'{f.name}  ✔')
             else:
+                LOGGER.info(f.relative_path,f'error meta {self.get_meta()}')
                 LOGGER.info(f.relative_path, f'{f.name}  ✖')
                 self.un_uploaded.append([f.relative_path, f'{f.relative_path}  ✖'])
         for d in node.sub_directory:
